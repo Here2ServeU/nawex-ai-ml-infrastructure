@@ -1,5 +1,7 @@
 # RAG Platform Infrastructure
 
+> **About this repository.** This is a portfolio project by [Emmanuel Naweji](https://github.com/nawex) demonstrating production-shaped DevOps/MLOps for an enterprise AI/ML platform. It is not a deployed service — it is a working, lint-clean reference implementation showing how I architect multi-cloud Kubernetes, GitOps delivery, observability, and SRE tooling for RAG workloads. Recruiters and hiring teams: start with [ARCHITECTURE.md](ARCHITECTURE.md) for the system design, [docs/adr/](docs/adr/) for the decisions and trade-offs, and [docs/slo-policy.md](docs/slo-policy.md) for the reliability contract.
+
 Production-shaped, cloud-native infrastructure for an enterprise RAG (Retrieval-Augmented Generation) platform. This repository implements the full operational stack — multi-cloud Kubernetes, GitOps delivery, observability, and SRE tooling — for serving large-scale AI/ML workloads.
 
 ## Highlights
