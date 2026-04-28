@@ -1,11 +1,6 @@
 name: Generate SLO PrometheusRules
 
 on:
-  push:
-    branches: [main]
-    paths:
-      - "observability/slo/**.slo.yaml"
-      - ".github/workflows/sloth.yml"
   workflow_dispatch:
 
 permissions:
