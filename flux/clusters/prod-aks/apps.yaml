@@ -36,7 +36,7 @@ spec:
       chart: ./helm/charts/rag-api
       sourceRef: { kind: GitRepository, name: flux-system, namespace: flux-system }
   values:
-    image: { repository: ghcr.io/your-org/rag-api, tag: v1.0.0 }
+    image: { repository: ghcr.io/nawex/rag-api, tag: v1.0.0 }
     autoscaling: { minReplicas: 10, maxReplicas: 60 }
     pdb: { enabled: true, minAvailable: "60%" }
     resources:
@@ -58,7 +58,7 @@ spec:
       chart: ./helm/charts/ingest-worker
       sourceRef: { kind: GitRepository, name: flux-system, namespace: flux-system }
   values:
-    image: { repository: ghcr.io/your-org/ingest-worker, tag: v1.0.0 }
+    image: { repository: ghcr.io/nawex/ingest-worker, tag: v1.0.0 }
     keda:
       minReplicaCount: 3
       maxReplicaCount: 100

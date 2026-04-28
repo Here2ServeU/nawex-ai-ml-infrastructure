@@ -35,7 +35,7 @@ spec:
           annotations:
             summary: "rag-api 5xx error ratio above 2%"
             description: "Error ratio is {{`{{ $value | humanizePercentage }}`}} over the last 5m."
-            runbook_url: https://github.com/your-org/devops-ai-ml-infrastructure/blob/main/docs/runbooks/rag-api-high-error-rate.md
+            runbook_url: https://github.com/nawex/devops-ai-ml-infrastructure/blob/main/docs/runbooks/rag-api-high-error-rate.md
 
         - alert: RagApiHighLatencyP95
           expr: job:rag_api_request_latency_seconds:p95_5m > 1.5
@@ -46,7 +46,7 @@ spec:
           annotations:
             summary: "rag-api p95 latency above 1.5s"
             description: "p95 = {{`{{ $value }}`}}s. Investigate vector-db latency, embedder latency, or saturation."
-            runbook_url: https://github.com/your-org/devops-ai-ml-infrastructure/blob/main/docs/runbooks/rag-api-high-latency.md
+            runbook_url: https://github.com/nawex/devops-ai-ml-infrastructure/blob/main/docs/runbooks/rag-api-high-latency.md
 
         - alert: RagApiPodCrashLooping
           expr: rate(kube_pod_container_status_restarts_total{namespace="{{ .Release.Namespace }}", pod=~"{{ include "rag-api.fullname" . }}-.*"}[15m]) > 0

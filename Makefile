@@ -37,7 +37,7 @@ tf-validate: ## Validate all Terraform configs
 .PHONY: flux-bootstrap
 flux-bootstrap: ## Bootstrap FluxCD against $CLUSTER
 	flux bootstrap git \
-		--url=ssh://git@github.com/your-org/devops-ai-ml-infrastructure \
+		--url=ssh://git@github.com/nawex/devops-ai-ml-infrastructure \
 		--branch=main \
 		--path=flux/clusters/$(CLUSTER) \
 		--components-extra=image-reflector-controller,image-automation-controller

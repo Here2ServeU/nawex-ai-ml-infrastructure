@@ -13,7 +13,7 @@ import (
 
 	"go.opentelemetry.io/otel"
 
-	"github.com/your-org/devops-ai-ml-infrastructure/apps/rag-api/internal/observability"
+	"github.com/nawex/devops-ai-ml-infrastructure/apps/rag-api/internal/observability"
 )
 
 var tracer = otel.Tracer("rag-api/retrieval")

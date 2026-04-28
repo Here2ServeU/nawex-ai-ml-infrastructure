@@ -19,7 +19,7 @@ slos:
       page_alert:
         labels: { severity: page }
         annotations:
-          runbook_url: https://github.com/your-org/devops-ai-ml-infrastructure/blob/main/docs/runbooks/rag-api-high-error-rate.md
+          runbook_url: https://github.com/nawex/devops-ai-ml-infrastructure/blob/main/docs/runbooks/rag-api-high-error-rate.md
       ticket_alert:
         labels: { severity: ticket }
 

@@ -12,6 +12,6 @@ keywords:
   - ai
   - llm
   - retrieval
-home: https://github.com/your-org/devops-ai-ml-infrastructure
+home: https://github.com/nawex/devops-ai-ml-infrastructure
 sources:
-  - https://github.com/your-org/devops-ai-ml-infrastructure/tree/main/apps/rag-api
+  - https://github.com/nawex/devops-ai-ml-infrastructure/tree/main/apps/rag-api

@@ -11,10 +11,10 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/your-org/devops-ai-ml-infrastructure/apps/rag-api/internal/config"
-	"github.com/your-org/devops-ai-ml-infrastructure/apps/rag-api/internal/handler"
-	"github.com/your-org/devops-ai-ml-infrastructure/apps/rag-api/internal/observability"
-	"github.com/your-org/devops-ai-ml-infrastructure/apps/rag-api/internal/retrieval"
+	"github.com/nawex/devops-ai-ml-infrastructure/apps/rag-api/internal/config"
+	"github.com/nawex/devops-ai-ml-infrastructure/apps/rag-api/internal/handler"
+	"github.com/nawex/devops-ai-ml-infrastructure/apps/rag-api/internal/observability"
+	"github.com/nawex/devops-ai-ml-infrastructure/apps/rag-api/internal/retrieval"
 )
 
 func main() {

@@ -18,7 +18,7 @@ flux/
 
 ```bash
 flux bootstrap git \
-  --url=ssh://git@github.com/your-org/devops-ai-ml-infrastructure \
+  --url=ssh://git@github.com/nawex/devops-ai-ml-infrastructure \
   --branch=main \
   --path=flux/clusters/dev-eks \
   --components-extra=image-reflector-controller,image-automation-controller

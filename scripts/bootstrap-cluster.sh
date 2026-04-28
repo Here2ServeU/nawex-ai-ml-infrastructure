@@ -7,7 +7,7 @@ set -euo pipefail
 
 ENV="${ENV:?set ENV (dev|staging|prod)}"
 CLUSTER="${CLUSTER:?set CLUSTER (dev-eks|staging-gke|prod-aks)}"
-REPO_URL="${REPO_URL:-ssh://git@github.com/your-org/devops-ai-ml-infrastructure}"
+REPO_URL="${REPO_URL:-ssh://git@github.com/nawex/devops-ai-ml-infrastructure}"
 
 echo "==> Checking kubectl context"
 kubectl config current-context >/dev/null

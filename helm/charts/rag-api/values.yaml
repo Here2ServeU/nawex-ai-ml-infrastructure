@@ -1,5 +1,5 @@
 image:
-  repository: ghcr.io/your-org/rag-api
+  repository: ghcr.io/nawex/rag-api
   tag: ""        # defaults to .Chart.AppVersion when empty
   pullPolicy: IfNotPresent
 

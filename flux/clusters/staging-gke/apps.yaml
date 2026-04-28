@@ -34,7 +34,7 @@ spec:
       sourceRef: { kind: GitRepository, name: flux-system, namespace: flux-system }
   values:
     image:
-      repository: ghcr.io/your-org/rag-api
+      repository: ghcr.io/nawex/rag-api
       tag: v0.1.0
     autoscaling:
       minReplicas: 5
@@ -56,5 +56,5 @@ spec:
       sourceRef: { kind: GitRepository, name: flux-system, namespace: flux-system }
   values:
     image:
-      repository: ghcr.io/your-org/ingest-worker
+      repository: ghcr.io/nawex/ingest-worker
       tag: v0.1.0

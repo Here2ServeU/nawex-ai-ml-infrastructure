@@ -1,4 +1,4 @@
-module github.com/your-org/devops-ai-ml-infrastructure/apps/rag-api
+module github.com/nawex/devops-ai-ml-infrastructure/apps/rag-api
 
 go 1.22
 

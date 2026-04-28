@@ -8,8 +8,8 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/your-org/devops-ai-ml-infrastructure/apps/rag-api/internal/observability"
-	"github.com/your-org/devops-ai-ml-infrastructure/apps/rag-api/internal/retrieval"
+	"github.com/nawex/devops-ai-ml-infrastructure/apps/rag-api/internal/observability"
+	"github.com/nawex/devops-ai-ml-infrastructure/apps/rag-api/internal/retrieval"
 )
 
 type API struct {

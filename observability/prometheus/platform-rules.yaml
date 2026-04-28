@@ -28,7 +28,7 @@ spec:
           labels: { severity: page }
           annotations:
             summary: "Node {{ $labels.node }} not Ready"
-            runbook_url: https://github.com/your-org/devops-ai-ml-infrastructure/blob/main/docs/runbooks/node-not-ready.md
+            runbook_url: https://github.com/nawex/devops-ai-ml-infrastructure/blob/main/docs/runbooks/node-not-ready.md
 
         - alert: KubePodCrashLoopingPlatform
           expr: |
@@ -45,4 +45,4 @@ spec:
           labels: { severity: warning }
           annotations:
             summary: "PVC {{ $labels.persistentvolumeclaim }} > 85% full"
-            runbook_url: https://github.com/your-org/devops-ai-ml-infrastructure/blob/main/docs/runbooks/pvc-almost-full.md
+            runbook_url: https://github.com/nawex/devops-ai-ml-infrastructure/blob/main/docs/runbooks/pvc-almost-full.md

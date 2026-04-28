@@ -4,7 +4,7 @@ metadata:
   name: rag-api
   namespace: flux-system
 spec:
-  image: ghcr.io/your-org/rag-api
+  image: ghcr.io/nawex/rag-api
   interval: 5m
 ---
 apiVersion: image.toolkit.fluxcd.io/v1beta2
@@ -28,7 +28,7 @@ metadata:
   name: ingest-worker
   namespace: flux-system
 spec:
-  image: ghcr.io/your-org/ingest-worker
+  image: ghcr.io/nawex/ingest-worker
   interval: 5m
 ---
 apiVersion: image.toolkit.fluxcd.io/v1beta2
@@ -62,7 +62,7 @@ spec:
         branch: main
     commit:
       author:
-        email: flux@your-org.com
+        email: flux@nawex.com
         name: fluxcd-bot
       messageTemplate: |
         chore(images): bump {{range .Updated.Images}}{{.}} {{end}} for dev-eks

@@ -1,5 +1,5 @@
 image:
-  repository: ghcr.io/your-org/ingest-worker
+  repository: ghcr.io/nawex/ingest-worker
   tag: ""
   pullPolicy: IfNotPresent
 

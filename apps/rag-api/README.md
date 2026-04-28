@@ -46,7 +46,7 @@ go test -race -count=1 ./...
 ## Image
 
 ```bash
-docker build -t ghcr.io/your-org/rag-api:dev .
+docker build -t ghcr.io/nawex/rag-api:dev .
 ```
 
 The image is distroless static, runs as UID 65532, exposes 8080 (HTTP) and 9090 (metrics).
