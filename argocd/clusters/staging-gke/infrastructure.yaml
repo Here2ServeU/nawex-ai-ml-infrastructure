@@ -1,0 +1,28 @@
+apiVersion: argoproj.io/v1alpha1
+kind: ApplicationSet
+metadata:
+  name: infrastructure-staging-gke
+  namespace: argocd
+spec:
+  generators:
+    - git:
+        repoURL: https://github.com/nawex/nawex-ai-ml-infrastructure
+        revision: main
+        files:
+          - path: argocd/infrastructure/*.yaml
+  template:
+    metadata:
+      name: '{{path.basename}}-staging-gke'
+    spec:
+      project: rag-platform
+      source:
+        repoURL: https://github.com/nawex/nawex-ai-ml-infrastructure
+        targetRevision: main
+        path: '{{path}}'
+      destination:
+        server: https://kubernetes.default.svc
+        namespace: argocd
+      syncPolicy:
+        automated:
+          prune: true
+          selfHeal: true

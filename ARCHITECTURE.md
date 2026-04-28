@@ -84,7 +84,7 @@ Multi-cloud is **not** active/active for the application data plane — it is **
 
 No long-lived cloud credentials live in Kubernetes secrets or environment variables.
 
-## CD: GitOps with FluxCD
+## CD: GitOps (FluxCD or ArgoCD)
 
 ```mermaid
 flowchart LR
@@ -92,13 +92,22 @@ flowchart LR
   Repo -->|webhook| CI[BitBucket / GitHub Actions CI]
   CI -->|build, test, scan, push| REG[(OCI Registry)]
   CI -->|update image tag PR| Repo
-  Repo -->|reconcile| Flux[FluxCD on each cluster]
-  Flux -->|apply| K8s[(Cluster)]
+  Repo -->|reconcile| GitOps{FluxCD or ArgoCD<br/>per cluster}
+  GitOps -->|apply| K8s[(Cluster)]
 ```
 
+The platform supports two reconcilers; pick one per cluster. Both consume the same Helm charts under [`helm/charts/`](helm/charts/), so swapping is non-destructive.
+
+| | FluxCD (default) | ArgoCD (alternative) |
+| --- | --- | --- |
+| Source of truth | [`flux/clusters/<name>/`](flux/) | [`argocd/clusters/<name>/`](argocd/) |
+| Bootstrap | `make flux-bootstrap CLUSTER=<name>` | `make argocd-bootstrap CLUSTER=<name>` |
+| Image promotion | `image-reflector` + `image-automation` controllers | `argocd-image-updater` |
+| UI | None (CLI + Grafana) | Built-in web UI |
+
 - One source of truth: this repo.
-- Image promotion: image automation controllers update `flux/clusters/<name>/` on new tags matching the env's policy (e.g. `prod` only takes `v*.*.*` semver tags).
-- Rollback: `git revert` of the promotion commit.
+- Image promotion: the chosen tool updates the cluster's directory on new tags matching the env's policy (e.g. `prod` only takes `v*.*.*` semver tags).
+- Rollback: `git revert` of the promotion commit; the reconciler converges back automatically.
 
 ## Observability
 

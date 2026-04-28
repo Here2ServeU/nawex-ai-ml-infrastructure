@@ -1,0 +1,25 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: rag-platform-dev-eks
+  namespace: argocd
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
+spec:
+  project: rag-platform
+  source:
+    repoURL: https://github.com/nawex/nawex-ai-ml-infrastructure
+    targetRevision: main
+    path: argocd/clusters/dev-eks
+    directory:
+      recurse: false
+      include: '{apps.yaml,infrastructure.yaml,image-updater.yaml}'
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: argocd
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - ApplyOutOfSyncOnly=true
