@@ -1,0 +1,102 @@
+apiVersion: v1
+kind: Namespace
+metadata: { name: rag, labels: { pod-security.kubernetes.io/enforce: restricted } }
+---
+apiVersion: v1
+kind: Namespace
+metadata: { name: ingest, labels: { pod-security.kubernetes.io/enforce: restricted } }
+---
+apiVersion: v1
+kind: Namespace
+metadata: { name: qdrant, labels: { pod-security.kubernetes.io/enforce: restricted } }
+---
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: vector-db-prod
+  namespace: argocd
+  finalizers: [resources-finalizer.argocd.argoproj.io]
+spec:
+  project: rag-platform
+  source:
+    repoURL: https://github.com/nawex/nawex-ai-ml-infrastructure
+    targetRevision: main
+    path: helm/charts/vector-db
+    helm:
+      values: |
+        replicaCount: 5
+        storage:
+          size: 500Gi
+          storageClass: managed-csi-premium
+        resources:
+          requests: { cpu: "2", memory: "8Gi" }
+          limits:   { cpu: "8", memory: "32Gi" }
+  destination: { server: https://kubernetes.default.svc, namespace: qdrant }
+  syncPolicy:
+    automated: { prune: true, selfHeal: false }
+    syncOptions: [CreateNamespace=true, ServerSideApply=true]
+---
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: rag-api-prod
+  namespace: argocd
+  annotations:
+    argocd-image-updater.argoproj.io/image-list: rag-api=ghcr.io/nawex/rag-api
+    argocd-image-updater.argoproj.io/rag-api.update-strategy: semver
+    argocd-image-updater.argoproj.io/rag-api.allow-tags: regexp:^v[1-9][0-9]*\.[0-9]+\.[0-9]+$
+    argocd-image-updater.argoproj.io/write-back-method: git
+    argocd-image-updater.argoproj.io/git-branch: main
+  finalizers: [resources-finalizer.argocd.argoproj.io]
+spec:
+  project: rag-platform
+  source:
+    repoURL: https://github.com/nawex/nawex-ai-ml-infrastructure
+    targetRevision: main
+    path: helm/charts/rag-api
+    helm:
+      values: |
+        image: { repository: ghcr.io/nawex/rag-api, tag: v1.0.0 }
+        autoscaling: { minReplicas: 10, maxReplicas: 60 }
+        pdb: { enabled: true, minAvailable: "60%" }
+        resources:
+          requests: { cpu: 500m, memory: 512Mi }
+          limits:   { cpu: "4",  memory: "2Gi" }
+        ingress:
+          hosts:
+            - host: rag-api.example.com
+              paths: [{ path: /, pathType: Prefix }]
+          tls: [{ secretName: rag-api-tls, hosts: [rag-api.example.com] }]
+  destination: { server: https://kubernetes.default.svc, namespace: rag }
+  syncPolicy:
+    automated: { prune: true, selfHeal: false }
+    syncOptions: [CreateNamespace=true, ServerSideApply=true]
+---
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: ingest-worker-prod
+  namespace: argocd
+  annotations:
+    argocd-image-updater.argoproj.io/image-list: ingest-worker=ghcr.io/nawex/ingest-worker
+    argocd-image-updater.argoproj.io/ingest-worker.update-strategy: semver
+    argocd-image-updater.argoproj.io/ingest-worker.allow-tags: regexp:^v[1-9][0-9]*\.[0-9]+\.[0-9]+$
+    argocd-image-updater.argoproj.io/write-back-method: git
+    argocd-image-updater.argoproj.io/git-branch: main
+  finalizers: [resources-finalizer.argocd.argoproj.io]
+spec:
+  project: rag-platform
+  source:
+    repoURL: https://github.com/nawex/nawex-ai-ml-infrastructure
+    targetRevision: main
+    path: helm/charts/ingest-worker
+    helm:
+      values: |
+        image: { repository: ghcr.io/nawex/ingest-worker, tag: v1.0.0 }
+        keda:
+          minReplicaCount: 3
+          maxReplicaCount: 100
+  destination: { server: https://kubernetes.default.svc, namespace: ingest }
+  syncPolicy:
+    automated: { prune: true, selfHeal: false }
+    syncOptions: [CreateNamespace=true, ServerSideApply=true]

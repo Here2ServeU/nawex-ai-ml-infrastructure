@@ -1,6 +1,6 @@
-# FluxCD GitOps
+# FluxCD GitOps (default)
 
-This directory is the source of truth that every cluster reconciles against.
+This directory is the FluxCD reconciliation tree. It is the **default** GitOps path; an equivalent ArgoCD tree lives in [`../argocd/`](../argocd/) for teams that prefer the UI-driven workflow. Pick one per cluster — both consume the same [Helm charts](../helm/charts/).
 
 ```
 flux/
