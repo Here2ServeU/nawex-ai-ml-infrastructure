@@ -1,0 +1,36 @@
+{{- if .Values.backup.enabled -}}
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: {{ include "vector-db.fullname" . }}-backup
+  labels: {{- include "vector-db.labels" . | nindent 4 }}
+spec:
+  schedule: {{ .Values.backup.schedule | quote }}
+  concurrencyPolicy: Forbid
+  successfulJobsHistoryLimit: 3
+  failedJobsHistoryLimit: 3
+  jobTemplate:
+    spec:
+      backoffLimit: 2
+      template:
+        metadata:
+          labels: {{- include "vector-db.selectorLabels" . | nindent 12 }}
+        spec:
+          restartPolicy: OnFailure
+          serviceAccountName: {{ .Values.backup.serviceAccount }}
+          containers:
+            - name: snapshot
+              image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+              command: ["/bin/sh", "-c"]
+              args:
+                - |
+                  set -euo pipefail
+                  ts=$(date -u +%Y%m%dT%H%M%SZ)
+                  echo "Triggering Qdrant snapshot at ${ts}"
+                  curl -fsS -X POST \
+                    "http://{{ include "vector-db.fullname" . }}-client:{{ .Values.service.ports.http }}/snapshots"
+                  echo "Snapshot created. Off-cluster shipping handled by sidecar/uploader."
+              env:
+                - name: RETENTION_DAYS
+                  value: {{ .Values.backup.retentionDays | quote }}
+{{- end }}

@@ -1,0 +1,59 @@
+image:
+  repository: qdrant/qdrant
+  tag: v1.10.0
+  pullPolicy: IfNotPresent
+
+replicaCount: 3
+
+storage:
+  size: 100Gi
+  storageClass: ""    # use the cluster default unless overridden
+
+resources:
+  requests:
+    cpu: "1"
+    memory: 4Gi
+  limits:
+    cpu: "4"
+    memory: 16Gi
+
+service:
+  ports:
+    http: 6333
+    grpc: 6334
+
+pdb:
+  minAvailable: 2
+
+serviceMonitor:
+  enabled: true
+  interval: 30s
+
+backup:
+  enabled: true
+  schedule: "0 */6 * * *"        # every 6 hours
+  retentionDays: 7
+  destination:
+    # Provide one. Cloud-specific so the chart stays portable.
+    s3Bucket: ""
+    gcsBucket: ""
+    azureContainer: ""
+  serviceAccount: vector-db-backup
+
+podSecurityContext:
+  runAsNonRoot: true
+  runAsUser: 1000
+  fsGroup: 1000
+
+securityContext:
+  allowPrivilegeEscalation: false
+  readOnlyRootFilesystem: false   # qdrant writes snapshots
+  capabilities:
+    drop: [ALL]
+
+networkPolicy:
+  enabled: true
+  ingressFromNamespaces:
+    - rag
+    - ingest
+    - observability

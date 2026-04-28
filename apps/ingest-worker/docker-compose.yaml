@@ -1,0 +1,42 @@
+services:
+  qdrant:
+    image: qdrant/qdrant:v1.10.0
+    ports: ["6333:6333", "6334:6334"]
+    volumes: [qdrant-data:/qdrant/storage]
+
+  mlflow:
+    image: ghcr.io/mlflow/mlflow:v2.14.3
+    command: >
+      mlflow server
+      --backend-store-uri sqlite:///mlflow/mlflow.db
+      --default-artifact-root /mlflow/artifacts
+      --host 0.0.0.0
+    ports: ["5000:5000"]
+    volumes: [mlflow-data:/mlflow]
+
+  airflow:
+    image: apache/airflow:2.9.3
+    depends_on: [qdrant, mlflow]
+    environment:
+      AIRFLOW__CORE__EXECUTOR: LocalExecutor
+      AIRFLOW__CORE__LOAD_EXAMPLES: "false"
+      AIRFLOW__DATABASE__SQL_ALCHEMY_CONN: sqlite:////airflow/airflow.db
+    ports: ["8080:8080"]
+    volumes:
+      - ./airflow/dags:/opt/airflow/dags:ro
+      - airflow-data:/airflow
+
+  ingest-worker:
+    build: .
+    depends_on: [qdrant, mlflow]
+    environment:
+      VECTOR_DB_ADDRESS: qdrant:6334
+      EMBEDDER_ENDPOINT: http://embedder:8080/embed
+      MLFLOW_TRACKING_URI: http://mlflow:5000
+      MLFLOW_EXPERIMENT: rag-ingest-local
+    ports: ["9090:9090"]
+
+volumes:
+  qdrant-data: {}
+  mlflow-data: {}
+  airflow-data: {}

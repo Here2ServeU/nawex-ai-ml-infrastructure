@@ -1,0 +1,45 @@
+repos:
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v4.6.0
+    hooks:
+      - id: trailing-whitespace
+      - id: end-of-file-fixer
+      - id: check-yaml
+      - id: check-added-large-files
+      - id: detect-private-key
+
+  - repo: https://github.com/antonbabenko/pre-commit-terraform
+    rev: v1.92.0
+    hooks:
+      - id: terraform_fmt
+      - id: terraform_validate
+        args:
+          - --tf-init-args=-backend=false
+      - id: terraform_tflint
+
+  - repo: https://github.com/gruntwork-io/pre-commit
+    rev: v0.1.23
+    hooks:
+      - id: helmlint
+
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: v0.5.7
+    hooks:
+      - id: ruff
+        files: ^apps/ingest-worker/
+      - id: ruff-format
+        files: ^apps/ingest-worker/
+
+  - repo: local
+    hooks:
+      - id: gofmt
+        name: gofmt
+        language: system
+        entry: bash -c 'cd apps/rag-api && gofmt -l . | (! grep .)'
+        files: ^apps/rag-api/.*\.go$
+      - id: govet
+        name: go vet
+        language: system
+        entry: bash -c 'cd apps/rag-api && go vet ./...'
+        files: ^apps/rag-api/.*\.go$
+        pass_filenames: false

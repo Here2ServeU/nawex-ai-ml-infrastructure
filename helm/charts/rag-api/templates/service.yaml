@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "rag-api.fullname" . }}
+  labels: {{- include "rag-api.labels" . | nindent 4 }}
+spec:
+  type: {{ .Values.service.type }}
+  ports:
+    - name: http
+      port: {{ .Values.service.port }}
+      targetPort: http
+    - name: metrics
+      port: 9090
+      targetPort: metrics
+  selector: {{- include "rag-api.selectorLabels" . | nindent 4 }}

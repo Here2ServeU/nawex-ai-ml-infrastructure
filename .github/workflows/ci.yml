@@ -1,0 +1,71 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  go:
+    name: rag-api (Go)
+    runs-on: ubuntu-latest
+    defaults: { run: { working-directory: apps/rag-api } }
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with: { go-version: "1.22" }
+      - run: go vet ./...
+      - run: gofmt -l . | (! grep .)
+      - run: go test -race -count=1 -coverprofile=coverage.out ./...
+      - uses: actions/upload-artifact@v4
+        with:
+          name: rag-api-coverage
+          path: apps/rag-api/coverage.out
+
+  python:
+    name: ingest-worker (Python)
+    runs-on: ubuntu-latest
+    defaults: { run: { working-directory: apps/ingest-worker } }
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: { python-version: "3.12" }
+      - run: pip install -e ".[dev]"
+      - run: ruff check .
+      - run: ruff format --check .
+      - run: pytest -q
+
+  helm:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: azure/setup-helm@v4
+      - run: |
+          for c in helm/charts/*/; do
+            echo "==> lint $c";   helm lint "$c"
+            echo "==> render $c"; helm template smoke "$c" >/dev/null
+          done
+
+  terraform:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: hashicorp/setup-terraform@v3
+        with: { terraform_version: "1.9.x" }
+      - run: terraform fmt -check -recursive terraform/
+      - run: |
+          for d in terraform/environments/*/; do
+            echo "==> validate $d"
+            terraform -chdir="$d" init -backend=false
+            terraform -chdir="$d" validate
+          done
+
+  yaml:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: pip install yamllint
+      - run: yamllint -d "{rules:{line-length:disable, document-start:disable, indentation:{indent-sequences:consistent}}}" .

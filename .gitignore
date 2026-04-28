@@ -1,0 +1,51 @@
+# Terraform
+**/.terraform/
+*.tfstate
+*.tfstate.*
+*.tfplan
+*.tfvars
+!*.tfvars.example
+.terraform.lock.hcl
+
+# Go
+apps/rag-api/bin/
+apps/rag-api/coverage.out
+apps/rag-api/dist/
+
+# Python
+**/__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+htmlcov/
+dist/
+build/
+
+# Editors
+.vscode/
+.idea/
+*.swp
+.DS_Store
+
+# Secrets
+*.pem
+*.key
+*.kubeconfig
+kubeconfig*
+.envrc
+.env
+.env.local
+
+# Helm
+**/charts/**/charts/
+**/charts/**/Chart.lock
+
+# Build artifacts
+*.tar
+*.tgz
+
+# Local overrides
+**/overrides.local.yaml

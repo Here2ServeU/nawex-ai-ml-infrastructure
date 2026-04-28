@@ -1,0 +1,85 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: rag
+  labels:
+    pod-security.kubernetes.io/enforce: restricted
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: ingest
+  labels:
+    pod-security.kubernetes.io/enforce: restricted
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: qdrant
+  labels:
+    pod-security.kubernetes.io/enforce: restricted
+---
+apiVersion: helm.toolkit.fluxcd.io/v2
+kind: HelmRelease
+metadata:
+  name: vector-db
+  namespace: qdrant
+spec:
+  interval: 10m
+  chart:
+    spec:
+      chart: ./helm/charts/vector-db
+      sourceRef:
+        kind: GitRepository
+        name: flux-system
+        namespace: flux-system
+  values:
+    replicaCount: 3
+    storage:
+      size: 50Gi
+      storageClass: gp3
+---
+apiVersion: helm.toolkit.fluxcd.io/v2
+kind: HelmRelease
+metadata:
+  name: rag-api
+  namespace: rag
+spec:
+  interval: 5m
+  chart:
+    spec:
+      chart: ./helm/charts/rag-api
+      sourceRef:
+        kind: GitRepository
+        name: flux-system
+        namespace: flux-system
+  values:
+    image:
+      repository: ghcr.io/your-org/rag-api  # {"$imagepolicy": "flux-system:rag-api:name"}
+      tag: v0.1.0                            # {"$imagepolicy": "flux-system:rag-api:tag"}
+    ingress:
+      hosts:
+        - host: rag-api.dev.example.com
+          paths: [{ path: /, pathType: Prefix }]
+      tls:
+        - secretName: rag-api-tls
+          hosts: [rag-api.dev.example.com]
+---
+apiVersion: helm.toolkit.fluxcd.io/v2
+kind: HelmRelease
+metadata:
+  name: ingest-worker
+  namespace: ingest
+spec:
+  interval: 5m
+  chart:
+    spec:
+      chart: ./helm/charts/ingest-worker
+      sourceRef:
+        kind: GitRepository
+        name: flux-system
+        namespace: flux-system
+  values:
+    image:
+      repository: ghcr.io/your-org/ingest-worker # {"$imagepolicy": "flux-system:ingest-worker:name"}
+      tag: v0.1.0                                 # {"$imagepolicy": "flux-system:ingest-worker:tag"}

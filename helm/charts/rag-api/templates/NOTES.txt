@@ -1,0 +1,11 @@
+rag-api {{ .Chart.AppVersion }} deployed.
+
+Endpoints:
+  Service:    {{ include "rag-api.fullname" . }}.{{ .Release.Namespace }}.svc:{{ .Values.service.port }}
+  Health:     /healthz, /readyz
+  Metrics:    :9090/metrics
+  API:        POST /v1/query  -> {"query": "...", "top_k": 8}
+
+Useful checks:
+  kubectl -n {{ .Release.Namespace }} rollout status deploy/{{ include "rag-api.fullname" . }}
+  kubectl -n {{ .Release.Namespace }} port-forward svc/{{ include "rag-api.fullname" . }} {{ .Values.service.port }}:{{ .Values.service.port }}

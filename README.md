@@ -1,0 +1,80 @@
+# RAG Platform Infrastructure
+
+Production-shaped, cloud-native infrastructure for an enterprise RAG (Retrieval-Augmented Generation) platform. This repository implements the full operational stack — multi-cloud Kubernetes, GitOps delivery, observability, and SRE tooling — for serving large-scale AI/ML workloads.
+
+## Highlights
+
+- **Multi-cloud Kubernetes** — Terraform modules for **EKS** (AWS), **GKE** (GCP), and **AKS** (Azure), each with private control planes, IRSA/Workload Identity, and autoscaling node pools.
+- **GitOps with FluxCD** — every cluster is reconciled from `flux/clusters/<name>/`. Bootstrapping is one command; promotion is a PR.
+- **Helm charts** for the RAG API (Go), the document ingest worker (Python), and the vector database (Qdrant). Charts include HPA, PDB, NetworkPolicy, ServiceMonitor, and PrometheusRule resources.
+- **Observability** — Prometheus + Grafana + Loki + Tempo, SLOs defined as code with Sloth, golden-signal dashboards, and burn-rate alerts wired to PagerDuty/Slack.
+- **SRE-first** — published SLOs, runbooks per alert, and self-healing automation for the most common production incidents.
+- **Applications** — a Go retrieval API and a Python ingest worker integrated with **MLflow** for model tracking and **Airflow** for ingest orchestration.
+
+## Layout
+
+```
+.
+├── apps/                     # Service code (Go RAG API, Python ingest worker)
+├── docs/                     # ADRs, runbooks, SLO policy, diagrams
+├── flux/                     # FluxCD GitOps configuration
+│   ├── clusters/             # Per-cluster reconciliation entrypoints
+│   └── infrastructure/       # Cluster-wide platform components
+├── helm/charts/              # Helm charts for platform applications
+├── kubernetes/               # Kustomize bases & overlays
+├── observability/            # Prometheus rules, Grafana dashboards, SLO defs
+├── scripts/                  # Bootstrap, chaos, self-healing tooling
+└── terraform/
+    ├── modules/              # Reusable IaC modules
+    └── environments/         # dev / staging / prod root configurations
+```
+
+See [ARCHITECTURE.md](ARCHITECTURE.md) for the system design and [docs/](docs/) for runbooks, ADRs, and the SLO policy.
+
+## Quick start
+
+```bash
+# 1. Provision a dev cluster (AWS EKS in us-east-1)
+make tf-init ENV=dev
+make tf-apply ENV=dev
+
+# 2. Bootstrap FluxCD against the new cluster
+make flux-bootstrap CLUSTER=dev-eks
+
+# 3. Verify reconciliation
+flux get kustomizations -A
+```
+
+The cluster comes up with the platform stack (cert-manager, ingress-nginx, kube-prometheus-stack, Loki, Tempo, FluxCD) and the RAG application reconciled from `flux/clusters/dev-eks/`.
+
+## Local development
+
+```bash
+# Run the RAG API locally with a stub vector store
+make rag-api-run
+
+# Run the ingest worker against a local Airflow + MLflow
+make ingest-worker-up
+
+# Lint everything (Go, Python, Terraform, Helm, YAML)
+make lint
+```
+
+## Production readiness checklist
+
+| Area | Status |
+| --- | --- |
+| Multi-cloud Terraform (EKS / GKE / AKS) | ✅ |
+| GitOps continuous delivery (FluxCD) | ✅ |
+| Helm charts (HPA, PDB, NetworkPolicy, ServiceMonitor) | ✅ |
+| Prometheus + Grafana + Loki + Tempo | ✅ |
+| SLO-as-code (Sloth) and burn-rate alerts | ✅ |
+| Runbooks for top alerts | ✅ |
+| Self-healing automation | ✅ |
+| Security: IRSA / Workload Identity / NetworkPolicy / PSA-restricted | ✅ |
+| Supply chain: image scanning, SBOM, signed images | ✅ |
+| Compliance scaffolding (SOC2-aligned controls in IaC) | ✅ |
+
+## License
+
+MIT — see [LICENSE](LICENSE).

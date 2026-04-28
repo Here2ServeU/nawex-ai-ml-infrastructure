@@ -1,0 +1,17 @@
+apiVersion: v2
+name: rag-api
+description: RAG retrieval API (Go) — query, document, and embedding endpoints.
+type: application
+version: 0.1.0
+appVersion: "0.1.0"
+maintainers:
+  - name: platform-team
+    email: revnaweji@gmail.com
+keywords:
+  - rag
+  - ai
+  - llm
+  - retrieval
+home: https://github.com/your-org/devops-ai-ml-infrastructure
+sources:
+  - https://github.com/your-org/devops-ai-ml-infrastructure/tree/main/apps/rag-api

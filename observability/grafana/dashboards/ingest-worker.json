@@ -1,0 +1,43 @@
+{
+  "title": "Ingest Worker",
+  "uid": "ingest-worker",
+  "schemaVersion": 39,
+  "tags": ["ingest", "platform"],
+  "time": { "from": "now-6h", "to": "now" },
+  "refresh": "30s",
+  "panels": [
+    {
+      "type": "timeseries",
+      "title": "Jobs/sec by status",
+      "gridPos": { "x": 0, "y": 0, "w": 12, "h": 8 },
+      "targets": [
+        { "expr": "sum by (status) (rate(ingest_jobs_total[1m]))", "legendFormat": "{{status}}" }
+      ]
+    },
+    {
+      "type": "timeseries",
+      "title": "Queue depth",
+      "gridPos": { "x": 12, "y": 0, "w": 12, "h": 8 },
+      "targets": [
+        { "expr": "ingest_queue_depth", "legendFormat": "{{queue}}" }
+      ]
+    },
+    {
+      "type": "timeseries",
+      "title": "Ingest lag (s) p95",
+      "gridPos": { "x": 0, "y": 8, "w": 24, "h": 9 },
+      "targets": [
+        { "expr": "histogram_quantile(0.95, sum by (le)(rate(ingest_lag_seconds_bucket[5m])))", "legendFormat": "p95" }
+      ],
+      "fieldConfig": { "defaults": { "unit": "s" } }
+    },
+    {
+      "type": "stat",
+      "title": "Documents indexed (24h)",
+      "gridPos": { "x": 0, "y": 17, "w": 8, "h": 6 },
+      "targets": [
+        { "expr": "sum(increase(ingest_documents_indexed_total[24h]))" }
+      ]
+    }
+  ]
+}

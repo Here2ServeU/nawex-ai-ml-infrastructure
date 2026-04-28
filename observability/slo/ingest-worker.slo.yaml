@@ -1,0 +1,34 @@
+version: "prometheus/v1"
+service: "ingest-worker"
+labels:
+  team: platform
+slos:
+  - name: "ingest-success-rate"
+    objective: 99.5
+    description: "Ingest jobs complete successfully (chunked, embedded, indexed)"
+    sli:
+      events:
+        error_query: |
+          sum(rate(ingest_jobs_total{status="failed"}[{{.window}}]))
+        total_query: |
+          sum(rate(ingest_jobs_total[{{.window}}]))
+    alerting:
+      name: IngestWorkerSuccessRate
+      page_alert: { labels: { severity: page } }
+      ticket_alert: { labels: { severity: ticket } }
+
+  - name: "ingest-freshness-15m"
+    objective: 99.0
+    description: "95% of submitted documents are indexed within 15 minutes"
+    sli:
+      events:
+        error_query: |
+          sum(rate(ingest_lag_seconds_bucket{le="900"}[{{.window}}]))
+          -
+          sum(rate(ingest_lag_seconds_count[{{.window}}]))
+        total_query: |
+          sum(rate(ingest_lag_seconds_count[{{.window}}]))
+    alerting:
+      name: IngestWorkerFreshness
+      page_alert: { labels: { severity: page } }
+      ticket_alert: { labels: { severity: ticket } }

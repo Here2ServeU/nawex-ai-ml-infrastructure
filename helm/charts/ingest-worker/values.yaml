@@ -1,0 +1,77 @@
+image:
+  repository: ghcr.io/your-org/ingest-worker
+  tag: ""
+  pullPolicy: IfNotPresent
+
+replicaCount: 2
+
+# Queue-driven autoscaling via KEDA. Falls back to HPA on CPU when KEDA is unavailable.
+keda:
+  enabled: true
+  minReplicaCount: 1
+  maxReplicaCount: 30
+  pollingInterval: 30
+  cooldownPeriod: 300
+  triggers:
+    - type: prometheus
+      metadata:
+        serverAddress: http://kube-prometheus-stack-prometheus.observability:9090
+        threshold: "10"
+        query: |
+          sum(ingest_queue_depth{queue="documents"})
+
+resources:
+  requests:
+    cpu: 250m
+    memory: 512Mi
+  limits:
+    cpu: "2"
+    memory: 2Gi
+
+config:
+  logLevel: info
+  vectorDB:
+    address: qdrant.qdrant.svc.cluster.local:6334
+    collection: documents
+  embedder:
+    endpoint: http://embedder.ml.svc.cluster.local/embed
+    batchSize: 32
+  mlflow:
+    trackingUri: http://mlflow.mlops.svc.cluster.local:5000
+    experiment: rag-ingest
+  airflow:
+    triggerToken: ""    # provided via External Secrets, NOT here
+
+podSecurityContext:
+  runAsNonRoot: true
+  runAsUser: 65532
+  runAsGroup: 65532
+  fsGroup: 65532
+  seccompProfile:
+    type: RuntimeDefault
+
+securityContext:
+  allowPrivilegeEscalation: false
+  readOnlyRootFilesystem: true
+  capabilities:
+    drop: [ALL]
+
+serviceAccount:
+  create: true
+  name: ""
+  annotations: {}
+
+serviceMonitor:
+  enabled: true
+  interval: 30s
+
+networkPolicy:
+  enabled: true
+  egressToNamespaces:
+    - qdrant
+    - ml
+    - mlops
+
+nodeSelector: {}
+tolerations: []
+affinity: {}

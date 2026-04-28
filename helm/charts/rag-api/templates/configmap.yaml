@@ -1,0 +1,13 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "rag-api.fullname" . }}
+  labels: {{- include "rag-api.labels" . | nindent 4 }}
+data:
+  LOG_LEVEL: {{ .Values.config.logLevel | quote }}
+  VECTOR_DB_ADDRESS: {{ .Values.config.vectorDB.address | quote }}
+  VECTOR_DB_COLLECTION: {{ .Values.config.vectorDB.collection | quote }}
+  EMBEDDER_ENDPOINT: {{ .Values.config.embedder.endpoint | quote }}
+  EMBEDDER_TIMEOUT_MS: {{ .Values.config.embedder.timeoutMs | quote }}
+  RETRIEVAL_TOP_K: {{ .Values.config.retrieval.topK | quote }}
+  RETRIEVAL_CONTEXT_TOKENS: {{ .Values.config.retrieval.contextTokens | quote }}

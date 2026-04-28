@@ -1,0 +1,61 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "ingest-worker.fullname" . }}
+  labels: {{- include "ingest-worker.labels" . | nindent 4 }}
+spec:
+  replicas: {{ .Values.replicaCount }}
+  selector:
+    matchLabels: {{- include "ingest-worker.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      labels: {{- include "ingest-worker.selectorLabels" . | nindent 8 }}
+    spec:
+      serviceAccountName: {{ include "ingest-worker.serviceAccountName" . }}
+      securityContext: {{- toYaml .Values.podSecurityContext | nindent 8 }}
+      terminationGracePeriodSeconds: 60
+      containers:
+        - name: worker
+          image: {{ include "ingest-worker.image" . }}
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          ports:
+            - name: metrics
+              containerPort: 9090
+          env:
+            - name: POD_NAME
+              valueFrom: { fieldRef: { fieldPath: metadata.name } }
+            - name: VECTOR_DB_ADDRESS
+              value: {{ .Values.config.vectorDB.address | quote }}
+            - name: VECTOR_DB_COLLECTION
+              value: {{ .Values.config.vectorDB.collection | quote }}
+            - name: EMBEDDER_ENDPOINT
+              value: {{ .Values.config.embedder.endpoint | quote }}
+            - name: EMBEDDER_BATCH_SIZE
+              value: {{ .Values.config.embedder.batchSize | quote }}
+            - name: MLFLOW_TRACKING_URI
+              value: {{ .Values.config.mlflow.trackingUri | quote }}
+            - name: MLFLOW_EXPERIMENT
+              value: {{ .Values.config.mlflow.experiment | quote }}
+            - name: LOG_LEVEL
+              value: {{ .Values.config.logLevel | quote }}
+          resources: {{- toYaml .Values.resources | nindent 12 }}
+          securityContext: {{- toYaml .Values.securityContext | nindent 12 }}
+          readinessProbe:
+            httpGet:
+              path: /readyz
+              port: metrics
+            periodSeconds: 5
+          livenessProbe:
+            httpGet:
+              path: /healthz
+              port: metrics
+            periodSeconds: 10
+          volumeMounts:
+            - name: tmp
+              mountPath: /tmp
+      volumes:
+        - name: tmp
+          emptyDir: {}
+      nodeSelector: {{- toYaml .Values.nodeSelector | nindent 8 }}
+      tolerations: {{- toYaml .Values.tolerations | nindent 8 }}
+      affinity: {{- toYaml .Values.affinity | nindent 8 }}

@@ -1,0 +1,38 @@
+name: Generate SLO PrometheusRules
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "observability/slo/**.slo.yaml"
+      - ".github/workflows/sloth.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  generate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install sloth
+        run: |
+          curl -sSL https://github.com/slok/sloth/releases/download/v0.11.0/sloth-linux-amd64 -o /usr/local/bin/sloth
+          chmod +x /usr/local/bin/sloth
+      - name: Generate PrometheusRules
+        run: |
+          set -e
+          for f in observability/slo/*.slo.yaml; do
+            out="${f%.slo.yaml}.prometheusrule.yaml"
+            echo "==> $f -> $out"
+            sloth generate -i "$f" -o "$out"
+          done
+      - uses: peter-evans/create-pull-request@v6
+        with:
+          commit-message: "chore(slo): regenerate PrometheusRules"
+          title: "chore(slo): regenerate PrometheusRules"
+          branch: chore/sloth-regenerate
+          delete-branch: true
+          add-paths: observability/slo

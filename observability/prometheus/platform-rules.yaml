@@ -1,0 +1,48 @@
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: platform-recording-rules
+  namespace: observability
+  labels:
+    app.kubernetes.io/part-of: rag-platform
+spec:
+  groups:
+    - name: platform.cluster
+      interval: 30s
+      rules:
+        - record: cluster:node_cpu:utilization
+          expr: |
+            1 - avg by (cluster) (rate(node_cpu_seconds_total{mode="idle"}[5m]))
+        - record: cluster:node_memory:utilization
+          expr: |
+            1 -
+            (sum by (cluster) (node_memory_MemAvailable_bytes)
+            /
+            sum by (cluster) (node_memory_MemTotal_bytes))
+
+    - name: platform.alerts
+      rules:
+        - alert: KubeNodeNotReady
+          expr: kube_node_status_condition{condition="Ready",status="true"} == 0
+          for: 10m
+          labels: { severity: page }
+          annotations:
+            summary: "Node {{ $labels.node }} not Ready"
+            runbook_url: https://github.com/your-org/devops-ai-ml-infrastructure/blob/main/docs/runbooks/node-not-ready.md
+
+        - alert: KubePodCrashLoopingPlatform
+          expr: |
+            rate(kube_pod_container_status_restarts_total{namespace=~"rag|ingest|qdrant|observability"}[15m]) > 0
+          for: 15m
+          labels: { severity: warning }
+          annotations:
+            summary: "Pod {{ $labels.namespace }}/{{ $labels.pod }} crash-looping"
+
+        - alert: PvcAlmostFull
+          expr: |
+            (kubelet_volume_stats_used_bytes / kubelet_volume_stats_capacity_bytes) > 0.85
+          for: 15m
+          labels: { severity: warning }
+          annotations:
+            summary: "PVC {{ $labels.persistentvolumeclaim }} > 85% full"
+            runbook_url: https://github.com/your-org/devops-ai-ml-infrastructure/blob/main/docs/runbooks/pvc-almost-full.md

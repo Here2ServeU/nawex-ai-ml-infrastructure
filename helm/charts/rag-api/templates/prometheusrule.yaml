@@ -1,0 +1,60 @@
+{{- if .Values.prometheusRule.enabled -}}
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: {{ include "rag-api.fullname" . }}
+  labels:
+    {{- include "rag-api.labels" . | nindent 4 }}
+    {{- with .Values.prometheusRule.labels }}
+    {{- toYaml . | nindent 4 }}
+    {{- end }}
+spec:
+  groups:
+    - name: rag-api.recording
+      interval: 30s
+      rules:
+        - record: job:rag_api_request_latency_seconds:p95_5m
+          expr: |
+            histogram_quantile(0.95,
+              sum by (le, job) (rate(rag_api_request_duration_seconds_bucket[5m]))
+            )
+        - record: job:rag_api_error_ratio:5m
+          expr: |
+            sum by (job) (rate(rag_api_requests_total{status=~"5.."}[5m]))
+            /
+            sum by (job) (rate(rag_api_requests_total[5m]))
+
+    - name: rag-api.alerts
+      rules:
+        - alert: RagApiHighErrorRate
+          expr: job:rag_api_error_ratio:5m > 0.02
+          for: 10m
+          labels:
+            severity: page
+            service: rag-api
+          annotations:
+            summary: "rag-api 5xx error ratio above 2%"
+            description: "Error ratio is {{`{{ $value | humanizePercentage }}`}} over the last 5m."
+            runbook_url: https://github.com/your-org/devops-ai-ml-infrastructure/blob/main/docs/runbooks/rag-api-high-error-rate.md
+
+        - alert: RagApiHighLatencyP95
+          expr: job:rag_api_request_latency_seconds:p95_5m > 1.5
+          for: 10m
+          labels:
+            severity: page
+            service: rag-api
+          annotations:
+            summary: "rag-api p95 latency above 1.5s"
+            description: "p95 = {{`{{ $value }}`}}s. Investigate vector-db latency, embedder latency, or saturation."
+            runbook_url: https://github.com/your-org/devops-ai-ml-infrastructure/blob/main/docs/runbooks/rag-api-high-latency.md
+
+        - alert: RagApiPodCrashLooping
+          expr: rate(kube_pod_container_status_restarts_total{namespace="{{ .Release.Namespace }}", pod=~"{{ include "rag-api.fullname" . }}-.*"}[15m]) > 0
+          for: 15m
+          labels:
+            severity: page
+            service: rag-api
+          annotations:
+            summary: "rag-api pod is crash-looping"
+            description: "Pod {{`{{ $labels.pod }}`}} restart rate is {{`{{ $value }}`}}/s."
+{{- end }}

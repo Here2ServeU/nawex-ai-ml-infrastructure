@@ -1,0 +1,27 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "vector-db.fullname" . }}
+  labels: {{- include "vector-db.labels" . | nindent 4 }}
+spec:
+  clusterIP: None
+  ports:
+    - name: http
+      port: {{ .Values.service.ports.http }}
+    - name: grpc
+      port: {{ .Values.service.ports.grpc }}
+  selector: {{- include "vector-db.selectorLabels" . | nindent 4 }}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "vector-db.fullname" . }}-client
+  labels: {{- include "vector-db.labels" . | nindent 4 }}
+spec:
+  type: ClusterIP
+  ports:
+    - name: http
+      port: {{ .Values.service.ports.http }}
+    - name: grpc
+      port: {{ .Values.service.ports.grpc }}
+  selector: {{- include "vector-db.selectorLabels" . | nindent 4 }}

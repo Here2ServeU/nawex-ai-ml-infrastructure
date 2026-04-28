@@ -1,0 +1,6 @@
+apiVersion: v2
+name: ingest-worker
+description: Document ingest worker (Python). Chunks, embeds, and indexes documents into the vector DB.
+type: application
+version: 0.1.0
+appVersion: "0.1.0"

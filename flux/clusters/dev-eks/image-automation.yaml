@@ -1,0 +1,73 @@
+apiVersion: image.toolkit.fluxcd.io/v1beta2
+kind: ImageRepository
+metadata:
+  name: rag-api
+  namespace: flux-system
+spec:
+  image: ghcr.io/your-org/rag-api
+  interval: 5m
+---
+apiVersion: image.toolkit.fluxcd.io/v1beta2
+kind: ImagePolicy
+metadata:
+  name: rag-api
+  namespace: flux-system
+spec:
+  imageRepositoryRef:
+    name: rag-api
+  filterTags:
+    pattern: '^v(?P<ver>0\..*)$'
+    extract: '$ver'
+  policy:
+    semver:
+      range: '>=0.0.0'
+---
+apiVersion: image.toolkit.fluxcd.io/v1beta2
+kind: ImageRepository
+metadata:
+  name: ingest-worker
+  namespace: flux-system
+spec:
+  image: ghcr.io/your-org/ingest-worker
+  interval: 5m
+---
+apiVersion: image.toolkit.fluxcd.io/v1beta2
+kind: ImagePolicy
+metadata:
+  name: ingest-worker
+  namespace: flux-system
+spec:
+  imageRepositoryRef:
+    name: ingest-worker
+  filterTags:
+    pattern: '^v(?P<ver>0\..*)$'
+    extract: '$ver'
+  policy:
+    semver:
+      range: '>=0.0.0'
+---
+apiVersion: image.toolkit.fluxcd.io/v1beta1
+kind: ImageUpdateAutomation
+metadata:
+  name: dev-image-updates
+  namespace: flux-system
+spec:
+  interval: 10m
+  sourceRef:
+    kind: GitRepository
+    name: flux-system
+  git:
+    checkout:
+      ref:
+        branch: main
+    commit:
+      author:
+        email: flux@your-org.com
+        name: fluxcd-bot
+      messageTemplate: |
+        chore(images): bump {{range .Updated.Images}}{{.}} {{end}} for dev-eks
+    push:
+      branch: main
+  update:
+    strategy: Setters
+    path: ./flux/clusters/dev-eks

@@ -1,0 +1,40 @@
+# Sloth (https://sloth.dev) SLO definitions for the RAG API.
+# Compile with:  sloth generate -i rag-api.slo.yaml -o rag-api.prometheusrule.yaml
+version: "prometheus/v1"
+service: "rag-api"
+labels:
+  team: platform
+slos:
+  - name: "availability"
+    objective: 99.9        # over 30 days
+    description: "rag-api responds with non-5xx for /v1/query"
+    sli:
+      events:
+        error_query: |
+          sum(rate(rag_api_requests_total{job="rag-api",route="/v1/query",status=~"5.."}[{{.window}}]))
+        total_query: |
+          sum(rate(rag_api_requests_total{job="rag-api",route="/v1/query"}[{{.window}}]))
+    alerting:
+      name: RagApiAvailability
+      page_alert:
+        labels: { severity: page }
+        annotations:
+          runbook_url: https://github.com/your-org/devops-ai-ml-infrastructure/blob/main/docs/runbooks/rag-api-high-error-rate.md
+      ticket_alert:
+        labels: { severity: ticket }
+
+  - name: "latency-p99-2s"
+    objective: 99.0
+    description: "99% of /v1/query requests complete within 2s"
+    sli:
+      events:
+        error_query: |
+          sum(rate(rag_api_request_duration_seconds_bucket{job="rag-api",route="/v1/query",le="2"}[{{.window}}]))
+          -
+          sum(rate(rag_api_request_duration_seconds_count{job="rag-api",route="/v1/query"}[{{.window}}]))
+        total_query: |
+          sum(rate(rag_api_request_duration_seconds_count{job="rag-api",route="/v1/query"}[{{.window}}]))
+    alerting:
+      name: RagApiLatencyP99
+      page_alert: { labels: { severity: page } }
+      ticket_alert: { labels: { severity: ticket } }
